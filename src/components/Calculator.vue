@@ -253,8 +253,8 @@ export default {
       this.score.push({
           index: index,
           score: dataForScore.map(function(e){return e['Код абитуриента']}).indexOf(1000)+1 +" из "+ dataForScore.length,
-          budget: `${ (indexBudget<=numberSeats[sub]) ? "Да\n": "Нет\n" }` + indexBudget +" из "+ numberSeats[sub],
-          doc: `${ (indexDoc<=numberSeats[sub]) ? "Да\n": "Нет\n" }` + indexDoc +" из "+ numberSeats[sub],
+          budget: `${ (indexBudget<=numberSeats[sub]) ? "Да ": "Нет " }` + indexBudget +" из "+ numberSeats[sub],
+          doc: `${ (indexDoc<=numberSeats[sub]) ? "Да ": "Нет " }` + indexDoc +" из "+ numberSeats[sub],
         })
     },
     //функция для сортировки списка с абитуринтом, в дальнейшем приритеты менять в ней
