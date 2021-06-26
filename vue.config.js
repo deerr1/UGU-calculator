@@ -1,5 +1,5 @@
 module.exports = {
-  publicPath: '/calculator/',
+  publicPath: '/UGU-calculator/',
   pluginOptions: {
     quasar: {
       importStrategy: "kebab",

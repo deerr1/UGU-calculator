@@ -22,6 +22,7 @@
                 :rules="[ val => Number(val) >= Number(limitScores[sub.subject]) || 'Ваши баллы меньше минимальных' ]"
                 v-model="sub.score" type="number" label="Баллы"
                 :min="limitScores[sub.subject]"
+                :max="100"
                 />
                 <q-icon
                   v-if="index!=0 || sub.subject!==null"
@@ -238,7 +239,37 @@ export default {
     dataScore(index){
       var sub = this.directionsSelect[index][0]
       var data = this.dataInst.filter(res => String(res["Специальность"]).includes(abbreviations[sub]))
-      var score = this.sumScore()
+
+      var indexSub = 0;
+      for(var i=0; i<directions.length; i++){
+        if(directions[i].direction.indexOf(sub) != -1){
+          indexSub = i
+          break
+        }
+      }
+      //переписать, чтобы учитывать максимальный балл если будет ситуации с тем, что есть два предмета включенных в одно направление
+      var subjectsScore = directions[indexSub]['subjects']["required"]
+      var index1 = this.indexSubject(directions[indexSub]['subjects']["additional"][0])
+      var index2 = this.indexSubject(directions[indexSub]['subjects']["additional"][1])
+      
+      var scoreAdditional = 0;
+      // console.log(index1)
+      // console.log(index2)
+      if(index1 == -1){
+        scoreAdditional = this.subject[index2]["score"]
+      }
+      else if(index2 == -1){
+        scoreAdditional = this.subject[index1]["score"]
+      }
+      else{
+        scoreAdditional = Math.max(this.subject[index1]["score"], this.subject[index2]["score"])
+      }
+      var score = Number(scoreAdditional);
+      subjectsScore.forEach((element) =>{
+        score += Number(this.subject[this.indexSubject(element)]["score"])
+      })
+
+      // var score = this.sumScore()
 
       var dataForScore = data.slice()
       var dataForDoc = data.slice()
@@ -253,11 +284,11 @@ export default {
       this.score.push({
           index: index,
           score: dataForScore.map(function(e){return e['Код абитуриента']}).indexOf(1000)+1 +" из "+ dataForScore.length,
-          budget: `${ (indexBudget<=numberSeats[sub]) ? "Да": "Нет" }` + indexBudget +" из "+ numberSeats[sub],
-          doc: `${ (indexDoc<=numberSeats[sub]) ? "Да": "Нет" }` + indexDoc +" из "+ numberSeats[sub],
+          budget: `${ (indexBudget<=numberSeats[sub]) ? "Да ": "Нет " }` + indexBudget +" из "+ numberSeats[sub],
+          doc: `${ (indexDoc<=numberSeats[sub]) ? "Да ": "Нет " }` + indexDoc +" из "+ numberSeats[sub],
         })
     },
-    //функция для сортировки списка с абитуринтом, в дальнейшем приритеты менять в ней
+    //функция для сортировки списка с абитуринтом, в дальнейшем приоритеты менять в ней
     directionsSorted(data){
       return data.sort(function(a,b){
         if(a['Суммарный балл'] > b['Суммарный балл']){
@@ -283,6 +314,18 @@ export default {
         }
         })
     },
+  // функция определения предмета !!! переделать слегка
+    indexSubject(sub){
+      for(var i=0; i<this.subject.length; i++){
+        if(this.subject[i]["subject"].indexOf(sub) != -1){
+          return i
+        }
+        else if(this.subject[i]["subject"].indexOf(sub) != -1){
+          return i
+        }
+      }
+      return -1
+    },
   // функция суммирования баллов
     sumScore(){
       var score = 0
@@ -294,45 +337,41 @@ export default {
     },
   // функция определения направления по определенным предметам
     sortedSubject(){
-      this.directions = []
-      var dir = []
-      directions.forEach((element) => {
-        var subject1 = element["subjects"]["required"].concat(element["subjects"]["additional"][0])
-        var subject2 = element["subjects"]["required"].concat(element["subjects"]["additional"][1])
-        if( this.containsSubject(subject1, this.subject) || this.containsSubject(subject2, this.subject) ){
-          dir = dir.concat(element["direction"])
-        }
-      })
-      var filter = this.directionsSelect
-      dir = dir.filter(function(el){
-        return filter.indexOf(el) == -1
-      })
-      this.directions = dir
+      if(this.subject.length<3){
+        this.directions = []
+        this.directionsSelect = [[null]]
+        return
+      }
+      else{
+        this.directions = []
+        var dir = []
+        directions.forEach((element) => {
+          var subject1 = element["subjects"]["required"].concat(element["subjects"]["additional"][0])
+          var subject2 = element["subjects"]["required"].concat(element["subjects"]["additional"][1])
+          if( this.containsSubject(subject1, this.subject) || this.containsSubject(subject2, this.subject) ){
+            dir = dir.concat(element["direction"])
+          }
+        })
+        var filter = this.directionsSelect
+        dir = dir.filter(function(el){
+          return filter.indexOf(el) == -1
+        })
+        this.directions = dir
+      }
     },
   // функция определения вхождения предмета в перечень направления
     containsSubject(where, what){
       var count = 0;
       for(var i=0; i<what.length; i++){
-        if(where.indexOf(what[i].subject) == -1){
-          return false;
-        }
-        else if(where.indexOf(what[i].subject) != -1){
+        if(where.indexOf(what[i].subject) != -1){
           count++;
         }
       }
-      if(count == where.length)
-        return true;
-      else
+      if(count<3)
         return false;
+      else
+        return true;
     },
-    inputSet(value){
-      var index = 0
-      console.log(value)
-      var arr = this.subject[index]
-      arr = [arr[0], value]
-      this.subject.splice(index, 1, arr)
-      console.log(this.subject)
-    }
   }
 }
 </script>
