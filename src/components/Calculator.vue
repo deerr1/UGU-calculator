@@ -4,7 +4,7 @@
           Калькулятор поступления
       </div>
       <div class="col-12 text-h6 text-center q-mt-md">
-          Баллы ЕГЭ
+          Баллы ЕГЭ ddddd
       </div>
       <div class="col-12 flex row justify-center">
             <q-select class="col-xl-7 col-lg-7 col-md-8 col-sm-11 col-xs-11 q-my-lg text-h6"
